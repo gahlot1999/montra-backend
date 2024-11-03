@@ -1,33 +1,43 @@
-import catchAsync from '../utils/catchAsync.js';
 import Budget from '../models/budgetModel.js';
+import APIFeatures from '../utils/apiFeatures.js';
 import AppError from '../utils/appError.js';
+import catchAsync from '../utils/catchAsync.js';
 
 const getAllBudget = catchAsync(async (req, res) => {
-  const budgets = await Budget.aggregate([
-    {
-      $match: { user: req.user._id },
-    },
-    {
-      $lookup: {
-        from: 'expenses',
-        localField: '_id',
-        foreignField: 'budget',
-        as: 'expenses',
+  const features = new APIFeatures(
+    Budget.aggregate([
+      {
+        $match: { user: req.user._id },
       },
-    },
-    {
-      $addFields: {
-        totalExpenses: { $sum: '$expenses.amount' },
-        totalSavings: { $subtract: ['$amount', { $sum: '$expenses.amount' }] },
+      {
+        $lookup: {
+          from: 'expenses',
+          localField: '_id',
+          foreignField: 'budget',
+          as: 'expenses',
+        },
       },
-    },
-    {
-      $project: {
-        expenses: 0,
-        user: 0,
+      {
+        $addFields: {
+          totalExpenses: { $sum: '$expenses.amount' },
+          totalSavings: {
+            $subtract: ['$amount', { $sum: '$expenses.amount' }],
+          },
+        },
       },
-    },
-  ]);
+      {
+        $project: {
+          expenses: 0,
+          user: 0,
+        },
+      },
+    ]),
+    req.query,
+  )
+    .sort()
+    .paginate();
+
+  const budgets = await features.query;
 
   res.status(200).json({
     request: {
@@ -136,4 +146,4 @@ const deleteBudget = catchAsync(async (req, res, next) => {
   });
 });
 
-export { getAllBudget, getBudget, addBudget, updateBudget, deleteBudget };
+export { addBudget, deleteBudget, getAllBudget, getBudget, updateBudget };

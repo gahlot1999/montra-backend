@@ -10,6 +10,7 @@ import globalErrorHandler from './middlewares/errorMw.js';
 import protect from './middlewares/protectMw.js';
 import authRouter from './routes/authRoutes.js';
 import budgetRouter from './routes/budgetRoutes.js';
+import categoryRouter from './routes/categoryRoutes.js';
 import expenseRouter from './routes/expenseRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import AppError from './utils/appError.js';
@@ -56,6 +57,7 @@ app.use(protect);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/budget', budgetRouter);
 app.use('/api/v1/expense', expenseRouter);
+app.use('/api/v1/category', categoryRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
