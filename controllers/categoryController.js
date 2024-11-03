@@ -1,9 +1,15 @@
 import Category from '../models/categoryModel.js';
+import APIFeatures from '../utils/apiFeatures.js';
 import AppError from '../utils/appError.js';
 import catchAsync from '../utils/catchAsync.js';
 
 const getAllCategory = catchAsync(async (req, res) => {
-  const categories = await Category.find({ user: req.user.id, active: true });
+  req.query.sort = 'name';
+  const features = new APIFeatures(
+    Category.find({ user: req.user.id, active: true }),
+    req.query,
+  ).sort();
+  const categories = await features.query;
 
   res.status(200).json({
     request: {
