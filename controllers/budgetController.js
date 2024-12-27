@@ -1,4 +1,6 @@
 import Budget from '../models/budgetModel.js';
+import EMI from '../models/emiModel.js';
+import Expense from '../models/expenseModel.js';
 import APIFeatures from '../utils/apiFeatures.js';
 import AppError from '../utils/appError.js';
 import catchAsync from '../utils/catchAsync.js';
@@ -77,6 +79,30 @@ const getBudget = catchAsync(async (req, res, next) => {
 const addBudget = catchAsync(async (req, res) => {
   req.body.user = req.user.id;
   const budget = await Budget.create(req.body);
+
+  //> 1. Check for active EMIs
+  const activeEMIs = await EMI.find({
+    user: req.user.id,
+    active: true,
+    startMonth: { $lte: budget.month },
+    endMonth: { $gte: budget.month },
+  });
+
+  //> 2. Add EMIs as expenses
+  const emiExpenses = activeEMIs?.map((emi) => ({
+    budget: budget._id,
+    name: emi.name,
+    amount: emi.amount,
+    category: emi.description,
+    isEmi: true,
+    paid: false,
+    emiMetaData: {
+      startMonth: emi.startMonth,
+      endMonth: emi.endMonth,
+    },
+  }));
+
+  await Expense.insertMany(emiExpenses);
 
   res.status(201).json({
     request: {

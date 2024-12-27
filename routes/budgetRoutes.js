@@ -1,9 +1,9 @@
 import express from 'express';
 import {
   addBudget,
+  deleteBudget,
   getAllBudget,
   getBudget,
-  deleteBudget,
   updateBudget,
 } from '../controllers/budgetController.js';
 import expenseRouter from './expenseRoutes.js';

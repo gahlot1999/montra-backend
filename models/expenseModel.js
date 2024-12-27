@@ -32,6 +32,14 @@ const expenseSchema = new Schema({
       message: 'Expense category is required',
     },
   },
+  isEmi: {
+    type: Boolean,
+    default: false,
+  },
+  emiMetaData: {
+    type: JSON,
+    default: null,
+  },
   paid: {
     type: Boolean,
     default: false,

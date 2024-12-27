@@ -20,7 +20,7 @@ const budgetSchema = new Schema(
       },
       unique: true,
       minlength: [3, 'Budget name must be at least 3 characters long'],
-      maxlength: [40, 'Budget name cannot be more than 50 characters long'],
+      maxlength: [50, 'Budget name cannot be more than 50 characters long'],
     },
     month: {
       type: Date,
