@@ -13,8 +13,6 @@ const addEmiExpenses = async (budget, userId) => {
     endMonth: { $gte: budget.month },
   });
 
-  console.log('activeEMIs', activeEMIs);
-
   //> 2. Add EMIs as expenses
   const emiExpenses = activeEMIs.map((emi) => ({
     budget: budget._id,
@@ -108,7 +106,6 @@ const addBudget = catchAsync(async (req, res) => {
   const budget = await Budget.create(req.body);
 
   if (req.query.addEmi === 'true') {
-    console.log('inside addEmi');
     await addEmiExpenses(budget, req.user.id);
   }
 
@@ -148,7 +145,7 @@ const updateBudget = catchAsync(async (req, res, next) => {
   }
 
   if (req.query.addEmi === 'true') {
-    await Expense.deleteMany({ budget: updatedBudget._id, category: 'EMI' });
+    await Expense.deleteMany({ budget: updatedBudget._id, isEmi: true });
     await addEmiExpenses(updatedBudget, req.user.id);
   }
 

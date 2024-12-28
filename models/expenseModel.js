@@ -56,7 +56,7 @@ const expenseSchema = new Schema({
   },
 });
 
-expenseSchema.index({ budget: 1, name: 1 }, { unique: true });
+expenseSchema.index({ budget: 1, name: 1, isEmi: 1 }, { unique: true });
 
 const Expense = mongoose.model('Expense', expenseSchema);
 
