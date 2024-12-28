@@ -18,7 +18,6 @@ const emiSchema = new Schema(
         value: true,
         message: 'EMI name is required',
       },
-      unique: true,
       minlength: [3, 'EMI name must be at least 3 characters long'],
       maxlength: [50, 'EMI name cannot be more than 50 characters long'],
     },

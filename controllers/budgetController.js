@@ -5,6 +5,33 @@ import APIFeatures from '../utils/apiFeatures.js';
 import AppError from '../utils/appError.js';
 import catchAsync from '../utils/catchAsync.js';
 
+const addEmiExpenses = async (budget, userId) => {
+  //> 1. Check for active EMIs
+  const activeEMIs = await EMI.find({
+    user: userId,
+    startMonth: { $lte: budget.month },
+    endMonth: { $gte: budget.month },
+  });
+
+  console.log('activeEMIs', activeEMIs);
+
+  //> 2. Add EMIs as expenses
+  const emiExpenses = activeEMIs.map((emi) => ({
+    budget: budget._id,
+    name: emi.name,
+    amount: emi.amount,
+    category: emi.description,
+    isEmi: true,
+    paid: false,
+    emiMetaData: {
+      startMonth: emi.startMonth,
+      endMonth: emi.endMonth,
+    },
+  }));
+
+  await Expense.insertMany(emiExpenses);
+};
+
 const getAllBudget = catchAsync(async (req, res) => {
   const features = new APIFeatures(
     Budget.aggregate([
@@ -80,29 +107,10 @@ const addBudget = catchAsync(async (req, res) => {
   req.body.user = req.user.id;
   const budget = await Budget.create(req.body);
 
-  //> 1. Check for active EMIs
-  const activeEMIs = await EMI.find({
-    user: req.user.id,
-    active: true,
-    startMonth: { $lte: budget.month },
-    endMonth: { $gte: budget.month },
-  });
-
-  //> 2. Add EMIs as expenses
-  const emiExpenses = activeEMIs?.map((emi) => ({
-    budget: budget._id,
-    name: emi.name,
-    amount: emi.amount,
-    category: emi.description,
-    isEmi: true,
-    paid: false,
-    emiMetaData: {
-      startMonth: emi.startMonth,
-      endMonth: emi.endMonth,
-    },
-  }));
-
-  await Expense.insertMany(emiExpenses);
+  if (req.query.addEmi === 'true') {
+    console.log('inside addEmi');
+    await addEmiExpenses(budget, req.user.id);
+  }
 
   res.status(201).json({
     request: {
@@ -137,6 +145,11 @@ const updateBudget = catchAsync(async (req, res, next) => {
 
   if (!updatedBudget) {
     return next(new AppError('Budget not found', 404));
+  }
+
+  if (req.query.addEmi === 'true') {
+    await Expense.deleteMany({ budget: updatedBudget._id, category: 'EMI' });
+    await addEmiExpenses(updatedBudget, req.user.id);
   }
 
   res.status(200).json({
