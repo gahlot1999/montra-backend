@@ -1,7 +1,9 @@
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import validator from 'validator';
 import crypto from 'crypto';
+import mongoose from 'mongoose';
+import validator from 'validator';
+import { defaultCategories } from '../utils/constants.js';
+import Category from './categoryModel.js';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -67,6 +69,14 @@ userSchema.pre('save', async function (next) {
 
   this.password = await bcrypt.hash(this.password, 12);
   next();
+});
+
+userSchema.post('save', async function () {
+  const userCategories = defaultCategories.map((cat) => {
+    return { user: this._id, name: cat, active: true };
+  });
+
+  await Category.insertMany(userCategories);
 });
 
 userSchema.methods.verifyPassword = async function (
