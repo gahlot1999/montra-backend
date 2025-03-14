@@ -54,6 +54,18 @@ app.use('/api/v1', authRouter);
 
 app.use(protect);
 
+app.get('/api/v1/validate-token', (req, res) => {
+  res.status(200).json({
+    request: {
+      status: 'success',
+      timestamp: req.requestTime,
+    },
+    response: {
+      message: 'Token is valid',
+    },
+  });
+});
+
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/budget', budgetRouter);
 app.use('/api/v1/expense', expenseRouter);
