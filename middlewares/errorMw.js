@@ -38,7 +38,8 @@ export default function globalErrorHandler(err, req, res, next) {
   if (error.code === 11000) error = handleDuplicateError(error);
   if (error.name === 'ValidationError') error = handleValidationErrorDB(error);
   if (error.name === 'CastError') error = handleCastErrorDB(error);
-  if (error.name === 'JsonWebTokenError') error = handleJWTError();
+  if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError')
+    error = handleJWTError();
 
   res.status(error.statusCode).json({
     request: {
@@ -54,3 +55,5 @@ export default function globalErrorHandler(err, req, res, next) {
 
   next();
 }
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NzA1Nzg0MDQzOGQ4MDAwZmMxYmE5NyIsImlhdCI6MTc0MTQzNzY4MCwiZXhwIjoxNzQxNTI0MDgwfQ.ps29V8846WFtGwE7W-h75grEh5JMtFDaUEu5Z4OMx7c
